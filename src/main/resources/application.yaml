@@ -1,0 +1,56 @@
+spring:
+  application:
+    name: be
+  datasource:
+    url: "jdbc:mysql://localhost:3306/truongtho"
+    driver-class-name: com.mysql.cj.jdbc.Driver
+    username: root
+    password: 123456
+  jpa:
+    hibernate:
+      ddl-auto: update
+      default_batch_fetch_size: 20
+    show-sql: true
+  h2:
+    console:
+      enabled: false
+      path: /h2-console
+  servlet:
+    multipart:
+      max-file-size: 5MB
+      max-request-size: 5MB
+
+
+cloudflare:
+  r2:
+    account-id: ${R2_ACCOUNT_ID}
+    access-key: ${R2_ACCESS_KEY}
+    secret-key: ${R2_SECRET_KEY}
+    bucket: "truongtho"
+    public-url: "https://pub-4366456f369044dbb0498de7f2f9bb44.r2.dev"
+    endpoint: "https://f9363626e0a27c343b7bb5f133afdba7.r2.cloudflarestorage.com"
+
+
+app:
+  upload:
+    max-size: 5MB
+    allowed-types:
+      - image/jpeg
+      - image/png
+      - image/webp
+
+  jwt:
+    secret: ${JWT_SECRET:bXktc3VwZXItc2VjcmV0LWp3dC1rZXktY2hhbmdlLWluLXByb2R1Y3Rpb24tbWluLTI1Ni1iaXRzLXNlY3JldA==}
+    access-expiration-ms: ${JWT_ACCESS_MINUTES:15}
+    refresh-expiration-days: ${JWT_REFRESH_DAYS:7}
+
+  google:
+    client-id: ${GOOGLE_CLIENT_ID}
+    client-secret: ${GOOGLE_CLIENT_SECRET}
+    redirect-uri: ${GOOGLE_REDIRECT_URI:http://localhost:8081/oauth2/callback/google}
+
+
+
+
+server:
+  port: ${SERVER_PORT:8081}
