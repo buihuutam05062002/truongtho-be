@@ -60,7 +60,7 @@ public class ReservationService {
     public ReservationResponse updateReservation(Long id, ReservationRequest reservationRequest){
         Reservation reservation  = reservationRepository.findById(id).orElseThrow(() -> new ResourceNotFoundException("Reservation not found" + id));
 
-        if((reservation.getReservationStatus() != ReservationStatus.PENDING) || (reservation.getReservationStatus() != ReservationStatus.CONFIRM )){
+        if((reservation.getReservationStatus() != ReservationStatus.PENDING) && (reservation.getReservationStatus() != ReservationStatus.CONFIRM )){
             throw new IllegalStateException("Chỉ có đặt bàn đang chờ hoặc đã chấp nhận mới được phép sửa");
         }
 

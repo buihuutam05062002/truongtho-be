@@ -14,7 +14,8 @@ public enum ErrorCode {
     RESOURCE_NOT_FOUND("404", "Resource not found", HttpStatus.NOT_FOUND),
     INVALID_REQUEST("400", "Invalid request", HttpStatus.BAD_REQUEST),
     UNAUTHORIZED("401", "Unauthorized", HttpStatus.UNAUTHORIZED),
-    FORBIDDEN("403", "Forbidden", HttpStatus.FORBIDDEN);
+    FORBIDDEN("403", "Forbidden", HttpStatus.FORBIDDEN),
+    INVALID_STATE("409", "Invalid state", HttpStatus.CONFLICT);
 
     final String code;
     final String message;

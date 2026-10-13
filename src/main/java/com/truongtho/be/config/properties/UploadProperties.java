@@ -1,4 +1,4 @@
-package com.truongtho.be.config;
+package com.truongtho.be.config.properties;
 
 import lombok.Getter;
 import lombok.Setter;

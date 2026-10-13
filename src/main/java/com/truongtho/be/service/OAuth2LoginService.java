@@ -15,6 +15,8 @@ import com.truongtho.be.repository.CustomerRepository;
 import com.truongtho.be.repository.RoleRepository;
 import com.truongtho.be.repository.UserAuthProviderRepository;
 import com.truongtho.be.repository.UsersRepository;
+import lombok.AccessLevel;
+import lombok.experimental.FieldDefaults;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import com.truongtho.be.service.TokenService;
@@ -26,14 +28,15 @@ import java.util.function.Function;
 import java.util.stream.Collectors;
 
 @Service
+@FieldDefaults(level = AccessLevel.PRIVATE)
 public class OAuth2LoginService {
 
-    private final Map<AuthProvider, OAuth2ProviderClient> clients;
-    private final UsersRepository usersRepository;
-    private final UserAuthProviderRepository providerRepository;
-    private final RoleRepository roleRepository;
-    private final CustomerRepository customerRepository;
-    private final TokenService tokenService;
+    final Map<AuthProvider, OAuth2ProviderClient> clients;
+    final UsersRepository usersRepository;
+    final UserAuthProviderRepository providerRepository;
+    final RoleRepository roleRepository;
+    final CustomerRepository customerRepository;
+    final TokenService tokenService;
 
     public OAuth2LoginService(List<OAuth2ProviderClient> clientList,
                               UsersRepository usersRepository,
@@ -141,7 +144,8 @@ public class OAuth2LoginService {
             case DELETED -> throw new AppException("Tài khoản không tồn tại");
             case INACTIVE -> throw new AppException("Tài khoản không hoạt động");
             case PENDING -> throw new AppException("Tài khoản chưa được kích hoạt");
-            default -> { }
+            default -> {
+            }
         }
     }
 }

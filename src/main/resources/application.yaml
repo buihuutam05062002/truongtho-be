@@ -9,7 +9,9 @@ spring:
   jpa:
     hibernate:
       ddl-auto: update
-      default_batch_fetch_size: 20
+    properties:
+      hibernate:
+        default_batch_fetch_size: 20
     show-sql: true
   h2:
     console:
@@ -40,8 +42,8 @@ app:
       - image/webp
 
   jwt:
-    secret: ${JWT_SECRET:bXktc3VwZXItc2VjcmV0LWp3dC1rZXktY2hhbmdlLWluLXByb2R1Y3Rpb24tbWluLTI1Ni1iaXRzLXNlY3JldA==}
-    access-expiration-ms: ${JWT_ACCESS_MINUTES:15}
+    secret: ${JWT_SECRET}
+    access-expiration-ms: ${JWT_ACCESS_MINUTES:900000}
     refresh-expiration-days: ${JWT_REFRESH_DAYS:7}
 
   google:
@@ -50,7 +52,14 @@ app:
     redirect-uri: ${GOOGLE_REDIRECT_URI:http://localhost:8081/oauth2/callback/google}
 
 
-
+  sepay:
+    api-key: ${SEPAY_WEBHOOK_API_KEY}
+#    account-number: ${SEPAY_ACCOUNT_NUMBER}
+#    bank: ${SEPAY_BANK}
+    account-number: "0000000002"
+    bank: "MBBank"
 
 server:
   port: ${SERVER_PORT:8081}
+
+

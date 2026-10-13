@@ -1,12 +1,15 @@
 package com.truongtho.be.dto.request;
 
 import jakarta.validation.constraints.NotBlank;
+import lombok.AccessLevel;
 import lombok.Getter;
 import lombok.Setter;
+import lombok.experimental.FieldDefaults;
 
 @Getter
 @Setter
+@FieldDefaults(level = AccessLevel.PRIVATE)
 public class OAuth2LoginRequest {
     @NotBlank
-    private String credential;
+    String credential;
 }

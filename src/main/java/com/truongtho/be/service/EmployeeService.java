@@ -10,7 +10,9 @@ import com.truongtho.be.exception.AppException;
 import com.truongtho.be.repository.EmployeeRepository;
 import com.truongtho.be.repository.RoleRepository;
 import com.truongtho.be.repository.UsersRepository;
+import lombok.AccessLevel;
 import lombok.RequiredArgsConstructor;
+import lombok.experimental.FieldDefaults;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -19,12 +21,13 @@ import java.util.UUID;
 
 @Service
 @RequiredArgsConstructor
+@FieldDefaults(level = AccessLevel.PRIVATE)
 public class EmployeeService {
 
-    private final UsersRepository usersRepository;
-    private final RoleRepository roleRepository;
-    private final EmployeeRepository employeeRepository;
-    private final PasswordEncoder passwordEncoder;
+    final UsersRepository usersRepository;
+    final RoleRepository roleRepository;
+    final EmployeeRepository employeeRepository;
+    final PasswordEncoder passwordEncoder;
 
     @Transactional
     public String createEmployee(CreateEmployeeRequest req) {

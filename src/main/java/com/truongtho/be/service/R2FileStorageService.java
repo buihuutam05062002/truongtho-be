@@ -1,7 +1,7 @@
 package com.truongtho.be.service;
 
-import com.truongtho.be.config.R2Properties;
-import com.truongtho.be.config.UploadProperties;
+import com.truongtho.be.config.properties.R2Properties;
+import com.truongtho.be.config.properties.UploadProperties;
 import com.truongtho.be.enums.UploadFolder;
 import com.truongtho.be.exception.BadRequestException;
 import com.truongtho.be.exception.FileStorageException;

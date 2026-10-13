@@ -1,5 +1,6 @@
 package com.truongtho.be.config;
 
+import com.truongtho.be.config.properties.R2Properties;
 import org.springframework.boot.context.properties.EnableConfigurationProperties;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;

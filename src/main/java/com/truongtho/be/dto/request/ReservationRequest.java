@@ -32,7 +32,7 @@ public class ReservationRequest {
     LocalDateTime reservationTime;
 
     @NotNull
-            @Min(1)
+    @Min(1)
     Integer partySize;
     String note;
 }

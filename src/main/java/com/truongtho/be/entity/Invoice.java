@@ -45,7 +45,7 @@ public class Invoice {
     @JoinColumn(name = "reservation_id", unique = true)
     Reservation reservation;
 
-    @ManyToOne(fetch = FetchType.LAZY,optional = false)
+    @ManyToOne(fetch = FetchType.LAZY,optional = true)
     @JoinColumn(name = "createdBy")
     Employee employee;
 

@@ -24,6 +24,8 @@ public class Payment {
     String id;
 
     BigDecimal amount;
+
+    @Column(unique = true, nullable = false)
     String transactionCode;
 
     @Enumerated(EnumType.STRING)
@@ -35,9 +37,17 @@ public class Payment {
     LocalDateTime createdAt;
     LocalDateTime paidAt;
 
+    @Column(unique = true)
+    Long sepayTransactionId;
+
+
+
+    @Column(unique = true)
+    String gatewayTransactionId;
+
     @ManyToOne(fetch = FetchType.LAZY)
             @JoinColumn(name = "employee_id")
-    Employee employees;
+    Employee employee;
 
     @ManyToOne(fetch = FetchType.LAZY, optional = false)
             @JoinColumn(name = "invoice_id")
