@@ -2,10 +2,10 @@ spring:
   application:
     name: be
   datasource:
-    url: "jdbc:mysql://localhost:3306/truongtho"
+    url: ${DB_URL:jdbc:mysql://localhost:3306/truongtho}
     driver-class-name: com.mysql.cj.jdbc.Driver
-    username: root
-    password: 123456
+    username: ${DB_USERNAME}
+    password: ${DB_PASSWORD}
   jpa:
     hibernate:
       ddl-auto: update
@@ -27,8 +27,8 @@ cloudflare:
     access-key: ${R2_ACCESS_KEY}
     secret-key: ${R2_SECRET_KEY}
     bucket: "truongtho"
-    public-url: "https://pub-4366456f369044dbb0498de7f2f9bb44.r2.dev"
-    endpoint: "https://f9363626e0a27c343b7bb5f133afdba7.r2.cloudflarestorage.com"
+    public-url: ${R2_PUBLIC_URL}
+    endpoint: ${R2_ENDPOINT}
 
 
 app:
@@ -40,14 +40,14 @@ app:
       - image/webp
 
   jwt:
-    secret: ${JWT_SECRET:bXktc3VwZXItc2VjcmV0LWp3dC1rZXktY2hhbmdlLWluLXByb2R1Y3Rpb24tbWluLTI1Ni1iaXRzLXNlY3JldA==}
+    secret: ${JWT_SECRET}
     access-expiration-ms: ${JWT_ACCESS_MINUTES:15}
     refresh-expiration-days: ${JWT_REFRESH_DAYS:7}
 
   google:
     client-id: ${GOOGLE_CLIENT_ID}
     client-secret: ${GOOGLE_CLIENT_SECRET}
-    redirect-uri: ${GOOGLE_REDIRECT_URI:http://localhost:8081/oauth2/callback/google}
+    redirect-uri: ${GOOGLE_REDIRECT_URI}
 
 
 
