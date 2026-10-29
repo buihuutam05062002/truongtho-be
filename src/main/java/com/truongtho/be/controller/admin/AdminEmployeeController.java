@@ -15,7 +15,7 @@ import org.springframework.web.bind.annotation.RestController;
 import java.util.Map;
 
 @RestController
-@RequestMapping("/admin/employees")
+@RequestMapping("/api/v1/admin/employees")
 @RequiredArgsConstructor
 public class AdminEmployeeController {
 

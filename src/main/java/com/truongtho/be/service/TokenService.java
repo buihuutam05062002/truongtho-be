@@ -3,6 +3,7 @@ package com.truongtho.be.service;
 import com.truongtho.be.dto.response.AuthResponse;
 import com.truongtho.be.entity.RefreshToken;
 import com.truongtho.be.entity.Users;
+import com.truongtho.be.enums.ErrorCode;
 import com.truongtho.be.exception.AppException;
 import com.truongtho.be.mapper.UserMapper;
 import com.truongtho.be.repository.RefreshTokenRepository;
@@ -44,14 +45,14 @@ public class TokenService {
     @Transactional(noRollbackFor = AppException.class)
     public AuthResponse refresh(String rawToken) {
         RefreshToken old = refreshTokenRepository.findByTokenHash(hash(rawToken))
-                .orElseThrow(() -> new AppException("Refresh token không hợp lệ"));
+                .orElseThrow(() -> new AppException(ErrorCode.REFRESH_TOKEN_INVALID));
 
         if (old.isRevoked()) {
             refreshTokenRepository.revokeAllByUserId(old.getUser().getId());
-            throw new AppException("Refresh token đã bị thu hồi, vui lòng đăng nhập lại");
+            throw new AppException(ErrorCode.REFRESH_TOKEN_INVALID);
         }
         if (old.getExpiresAt().isBefore(Instant.now())) {
-            throw new AppException("Refresh token đã hết hạn, vui lòng đăng nhập lại");
+            throw new AppException(ErrorCode.REFRESH_TOKEN_INVALID);
         }
 
         Users user = old.getUser();
@@ -98,10 +99,10 @@ public class TokenService {
 
     private void checkUserStatus(Users user) {
         switch (user.getUserStatus()) {
-            case LOCKED -> throw new AppException("Tài khoản đã bị khóa");
-            case DELETED -> throw new AppException("Tài khoản không tồn tại");
-            case INACTIVE -> throw new AppException("Tài khoản không hoạt động");
-            case PENDING -> throw new AppException("Tài khoản chưa được kích hoạt");
+            case LOCKED -> throw new AppException(ErrorCode.ACCOUNT_LOCKED);
+            case DELETED -> throw new AppException(ErrorCode.ACCOUNT_LOCKED);
+            case INACTIVE -> throw new AppException(ErrorCode.ACCOUNT_LOCKED);
+            case PENDING -> throw new AppException(ErrorCode.ACCOUNT_LOCKED);
             default -> { }
         }
     }
