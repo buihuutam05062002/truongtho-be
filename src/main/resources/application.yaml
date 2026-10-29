@@ -2,10 +2,10 @@ spring:
   application:
     name: be
   datasource:
-    url: "jdbc:mysql://localhost:3306/truongtho"
+    url: ${DB_URL}
     driver-class-name: com.mysql.cj.jdbc.Driver
-    username: root
-    password: 123456
+    username: ${DB_USERNAME}
+    password: ${DB_PASSWORD}
   jpa:
     hibernate:
       ddl-auto: update
@@ -29,8 +29,8 @@ cloudflare:
     access-key: ${R2_ACCESS_KEY}
     secret-key: ${R2_SECRET_KEY}
     bucket: "truongtho"
-    public-url: "https://pub-4366456f369044dbb0498de7f2f9bb44.r2.dev"
-    endpoint: "https://f9363626e0a27c343b7bb5f133afdba7.r2.cloudflarestorage.com"
+    public-url: ${R2_PUBLIC_URL}
+    endpoint: ${R2_ENDPOINT}
 
 
 app:
@@ -43,21 +43,21 @@ app:
 
   jwt:
     secret: ${JWT_SECRET}
-    access-expiration-ms: ${JWT_ACCESS_MINUTES:900000}
+    access-expiration-minutes: ${JWT_ACCESS_MINUTES:15}
     refresh-expiration-days: ${JWT_REFRESH_DAYS:7}
 
   google:
     client-id: ${GOOGLE_CLIENT_ID}
     client-secret: ${GOOGLE_CLIENT_SECRET}
-    redirect-uri: ${GOOGLE_REDIRECT_URI:http://localhost:8081/oauth2/callback/google}
-
+    redirect-uri: ${GOOGLE_REDIRECT_URI}
+  cookie:
+    secure: ${COOKIE_SECURE:false}
+    path: ${COOKIE_PATH:/api/v1/auth}
 
   sepay:
     api-key: ${SEPAY_WEBHOOK_API_KEY}
-#    account-number: ${SEPAY_ACCOUNT_NUMBER}
-#    bank: ${SEPAY_BANK}
-    account-number: "0000000002"
-    bank: "MBBank"
+    account-number: ${SEPAY_ACCOUNT_NUMBER:"0000000002"}
+    bank: ${SEPAY_BANK:"MBBank"}
 
 server:
   port: ${SERVER_PORT:8081}

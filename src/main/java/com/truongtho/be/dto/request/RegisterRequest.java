@@ -9,16 +9,16 @@ import lombok.Setter;
 @Getter
 @Setter
 public class RegisterRequest {
-    @NotBlank
-    @Size(min = 4, max = 30)
-    String username;
-    @NotBlank
-    String fullName;
+//    @NotBlank
+//    @Size(min = 4, max = 30)
+//    String username;
+//    @NotBlank
+//    String fullName;
     @NotBlank
     @Email
     String email;
     @NotBlank
     @Size(min = 8)
     String password;
-    String phoneNumber;
+//    String phoneNumber;
 }

@@ -12,7 +12,7 @@ import org.springframework.web.bind.annotation.*;
 import java.util.List;
 
 @Controller
-@RequestMapping("/dining-tables/v1")
+@RequestMapping("/api/v1/dining-tables")
 @FieldDefaults(level = AccessLevel.PRIVATE)
 public class DiningTableController {
     final DiningTableService diningTableService;

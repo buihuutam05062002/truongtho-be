@@ -12,6 +12,7 @@ import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
 
 import javax.crypto.SecretKey;
+import java.time.Duration;
 import java.util.Date;
 
 @Service
@@ -22,9 +23,9 @@ public class JwtService {
     private final long expirationMs;
 
     public JwtService(@Value("${app.jwt.secret}") String secret,
-                      @Value("${app.jwt.access-expiration-ms}") long expirationMs) {
+                      @Value("${app.jwt.access-expiration-minutes}") long minutes) {
         this.key = Keys.hmacShaKeyFor(Decoders.BASE64.decode(secret));
-        this.expirationMs = expirationMs;
+        this.expirationMs = Duration.ofMinutes(minutes).toMillis();
     }
 
     public String generateToken(Users user) {
