@@ -89,33 +89,6 @@ public class GlobalExceptionHandler {
         log.error("Unhandled exception", e);
         return ErrorBody.of(ErrorCode.INTERNAL_ERROR);
     }
-    @ExceptionHandler(IllegalStateException.class)
-    ResponseEntity<ErrorBody> state(IllegalStateException e){
-        return ErrorBody.of(ErrorCode.INVALID_REQUEST, e.getMessage(), null);
-    }
-    @ExceptionHandler(ResourceNotFoundException.class)
-    public ResponseEntity<Map<String, String>> handleNotFound(ResourceNotFoundException e) {
-        return ResponseEntity.status(HttpStatus.NOT_FOUND).body(Map.of("message", e.getMessage()));
-    }
-
-    @ExceptionHandler(BusinessException.class)
-    public ResponseEntity<Map<String, String>> handleBusiness(BusinessException e) {
-        return ResponseEntity.status(e.getErrorCode().getStatus()).body(Map.of("message", e.getMessage()));
-    }
-
-    @ExceptionHandler(AppException.class)   // AuthService đang dùng, hiện đang ra 500
-    public ResponseEntity<Map<String, String>> handleApp(AppException e) {
-        return ResponseEntity.badRequest().body(Map.of("message", e.getMessage()));
-    }
-
-    @ExceptionHandler(MethodArgumentNotValidException.class)
-    public ResponseEntity<Map<String, String>> handleValidation(MethodArgumentNotValidException e) {
-        String msg = e.getBindingResult().getFieldErrors().stream()
-                .map(f -> f.getField() + ": " + f.getDefaultMessage())
-                .collect(Collectors.joining("; "));
-        return ResponseEntity.badRequest().body(Map.of("message", msg));
-    }
-
     @ExceptionHandler(OptimisticLockingFailureException.class)
     public ResponseEntity<Map<String, String>> handleLock(OptimisticLockingFailureException e) {
         return ResponseEntity.status(HttpStatus.CONFLICT)

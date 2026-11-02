@@ -42,11 +42,11 @@ public class PaymentService {
                 .orElseThrow(() -> new ResourceNotFoundException("Không tìm thấy hóa đơn: " + invoiceId));
 
         if (invoice.getInvoiceStatus() != InvoiceStatus.PENDING) {
-            throw new BusinessException(ErrorCode.INVALID_STATE, "Hóa đơn không ở trạng thái chờ thanh toán");
+            throw new BusinessException(ErrorCode.INVALID_REQUEST, "Hóa đơn không ở trạng thái chờ thanh toán");
         }
         if (invoice.getTotalAmount() == null
                 || invoice.getTotalAmount().compareTo(BigDecimal.ZERO) <= 0) {
-            throw new BusinessException(ErrorCode.INVALID_STATE, "Hóa đơn phải có tổng tiền lớn hơn 0");
+            throw new BusinessException(ErrorCode.INVALID_REQUEST, "Hóa đơn phải có tổng tiền lớn hơn 0");
         }
         Payment payment = paymentRepository
                 .findByInvoice_IdAndPaymentStatus(invoiceId, PaymentStatus.PENDING)
@@ -83,17 +83,17 @@ public class PaymentService {
                 .orElseThrow(() -> new ResourceNotFoundException("Không tìm thấy thanh toán: " + paymentId));
 
         if (payment.getPaymentStatus() != PaymentStatus.PENDING) {
-            throw new BusinessException(ErrorCode.INVALID_STATE, "Thanh toán không còn ở trạng thái chờ");
+            throw new BusinessException(ErrorCode.INVALID_REQUEST, "Thanh toán không còn ở trạng thái chờ");
         }
         if (invoice.getInvoiceStatus() != InvoiceStatus.PENDING) {
-            throw new BusinessException(ErrorCode.INVALID_STATE, "Hóa đơn không còn ở trạng thái chờ thanh toán");
+            throw new BusinessException(ErrorCode.INVALID_REQUEST, "Hóa đơn không còn ở trạng thái chờ thanh toán");
         }
         if (payment.getPaymentMethod() == PaymentMethod.ONLINE) {
-            throw new BusinessException(ErrorCode.INVALID_STATE, "Thanh toán online không xác nhận thủ công");
+            throw new BusinessException(ErrorCode.INVALID_REQUEST, "Thanh toán online không xác nhận thủ công");
         }
         if (invoice.getTotalAmount() == null
                 || invoice.getTotalAmount().compareTo(BigDecimal.ZERO) <= 0) {
-            throw new BusinessException(ErrorCode.INVALID_STATE, "Hóa đơn phải có tổng tiền lớn hơn 0");
+            throw new BusinessException(ErrorCode.INVALID_REQUEST, "Hóa đơn phải có tổng tiền lớn hơn 0");
         }
         Employee employee = employeeRepository.findById(employeeId)
                 .orElseThrow(() -> new ResourceNotFoundException("Không tìm thấy nhân viên: " + employeeId));
@@ -136,11 +136,11 @@ public class PaymentService {
         Invoice invoice = invoiceRepository.findByIdForUpdate(invoiceId)
                 .orElseThrow(() -> new ResourceNotFoundException("Không tìm thấy hóa đơn: " + invoiceId));
         if (invoice.getInvoiceStatus() != InvoiceStatus.PENDING) {
-            throw new BusinessException(ErrorCode.INVALID_STATE, "Hóa đơn không ở trạng thái chờ thanh toán");
+            throw new BusinessException(ErrorCode.INVALID_REQUEST, "Hóa đơn không ở trạng thái chờ thanh toán");
         }
         if (invoice.getTotalAmount() == null
                 || invoice.getTotalAmount().compareTo(BigDecimal.ZERO) <= 0) {
-            throw new BusinessException(ErrorCode.INVALID_STATE, "Hóa đơn phải có tổng tiền lớn hơn 0");
+            throw new BusinessException(ErrorCode.INVALID_REQUEST, "Hóa đơn phải có tổng tiền lớn hơn 0");
         }
         Payment payment = paymentRepository
                 .findByInvoice_IdAndPaymentStatus(invoiceId, PaymentStatus.PENDING)

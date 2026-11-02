@@ -18,6 +18,8 @@ import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import java.util.Map;
+import java.util.Set;
 import java.util.UUID;
 
 @Service
@@ -34,7 +36,7 @@ public class ReservationService {
     public ReservationResponse create(ReservationRequest reservationRequest){
         Reservation reservation = new Reservation();
 
-        reservation.setReservationCode("RES" + UUID.randomUUID().toString().substring(2,8).toUpperCase());
+        reservation.setReservationCode(generateCode());
 
         reservation.setContactName(reservationRequest.getContactName());
         reservation.setContactPhone(reservationRequest.getContactPhone());
@@ -48,6 +50,14 @@ public class ReservationService {
 
         return reservationMapper.toResponse(saveReservation);
     }
+    private String generateCode(){
+        String code;
+        do{
+            code = "RES" +   UUID.randomUUID().toString().substring(0,8).toUpperCase();
+        }while (reservationRepository.existsByReservationCode(code));
+        return code;
+    }
+
 
     @Transactional(readOnly = true)
     public ReservationResponse getReservationById(Long id){
@@ -90,4 +100,22 @@ public class ReservationService {
                 .map(reservationMapper::toResponse);
     }
 
+    private static final Map<ReservationStatus, Set<ReservationStatus>> ALLOWED  = Map.of(
+            ReservationStatus.PENDING,Set.of(ReservationStatus.CONFIRM,ReservationStatus.CANCELLED),
+            ReservationStatus.CONFIRM,Set.of(ReservationStatus.ARRIVED,ReservationStatus.CANCELLED,ReservationStatus.NO_SHOW),
+            ReservationStatus.ARRIVED,Set.of(ReservationStatus.COMPLETED)
+    );
+
+    @Transactional
+    public ReservationResponse updateStatus(Long id, ReservationStatus next){
+        Reservation reservation = reservationRepository.findById(id).orElseThrow(() -> new ResourceNotFoundException("reservation not found "+ id));
+        ReservationStatus current = reservation.getReservationStatus();
+        if(!ALLOWED.getOrDefault(current,Set.of()).contains(next)){
+            throw new IllegalStateException("Trạng thái yêu cầu đặt bàn không hợp lệ");
+        }
+        reservation.setReservationStatus(next);
+        reservationRepository.save(reservation);
+        return reservationMapper.toResponse(reservation);
+
+    }
 }

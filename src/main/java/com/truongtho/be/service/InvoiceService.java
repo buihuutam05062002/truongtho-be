@@ -41,10 +41,10 @@ public class InvoiceService {
                 .orElseThrow(() -> new ResourceNotFoundException("Không tìm thấy nhân viên: " + employeeId));
 
         if (invoiceRepository.existsByDiningTable_IdAndInvoiceStatus(tableId, InvoiceStatus.PENDING)) {
-            throw new BusinessException(ErrorCode.INVALID_STATE, "Bàn này đã có hóa đơn đang mở");
+            throw new BusinessException(ErrorCode.INVALID_REQUEST, "Bàn này đã có hóa đơn đang mở");
         }
         if (table.getTableStatus() != TableStatus.AVAILABLE) {
-            throw new BusinessException(ErrorCode.INVALID_STATE, "Bàn không ở trạng thái trống");
+            throw new BusinessException(ErrorCode.INVALID_REQUEST, "Bàn không ở trạng thái trống");
         }
 
         Invoice invoice = new Invoice();
@@ -73,10 +73,10 @@ public class InvoiceService {
 
         if (product.getProductStatus() == ProductStatus.OUT_OF_STOCK
                 || product.getProductStatus() == ProductStatus.SUSPENDED) {
-            throw new BusinessException(ErrorCode.INVALID_STATE, "Sản phẩm hiện không thể bán");
+            throw new BusinessException(ErrorCode.INVALID_REQUEST, "Sản phẩm hiện không thể bán");
         }
         if (product.getUnitPrice() == null) {
-            throw new BusinessException(ErrorCode.INVALID_STATE, "Sản phẩm chưa có giá");
+            throw new BusinessException(ErrorCode.INVALID_REQUEST, "Sản phẩm chưa có giá");
         }
 
         InvoiceDetail detail = findDetail(invoice, product.getId());
@@ -152,7 +152,7 @@ public class InvoiceService {
                 .orElseThrow(() -> new ResourceNotFoundException("Không tìm thấy hóa đơn: " + invoiceId));
 
         if (invoice.getInvoiceStatus() != InvoiceStatus.PENDING) {
-            throw new BusinessException(ErrorCode.INVALID_STATE, "Chỉ được thao tác với hóa đơn đang mở");
+            throw new BusinessException(ErrorCode.INVALID_REQUEST, "Chỉ được thao tác với hóa đơn đang mở");
         }
         return invoice;
     }

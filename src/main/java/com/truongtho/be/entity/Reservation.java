@@ -22,7 +22,7 @@ public class Reservation {
     @Column(name = "reservation_id")
     Long id;
 
-    @Column(name = "reservation_code")
+    @Column(name = "reservation_code", unique = true)
     String reservationCode;
 
     String contactName;

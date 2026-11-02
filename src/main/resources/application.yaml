@@ -28,7 +28,7 @@ cloudflare:
     account-id: ${R2_ACCOUNT_ID}
     access-key: ${R2_ACCESS_KEY}
     secret-key: ${R2_SECRET_KEY}
-    bucket: "truongtho"
+    bucket: ${R2_BUCKET}
     public-url: ${R2_PUBLIC_URL}
     endpoint: ${R2_ENDPOINT}
 

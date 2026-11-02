@@ -1,6 +1,7 @@
 package com.truongtho.be.controller;
 
 import com.truongtho.be.dto.request.ReservationRequest;
+import com.truongtho.be.dto.request.ReservationStatusRequest;
 import com.truongtho.be.dto.response.ReservationResponse;
 import com.truongtho.be.service.ReservationService;
 import jakarta.validation.Valid;
@@ -44,5 +45,12 @@ public class ReservationController {
     public ResponseEntity<Void> deleteReservation(@PathVariable Long id){
         reservationService.deleteReservation(id);
         return ResponseEntity.noContent().build();
+    }
+
+    @PatchMapping("/{id}/status")
+    public ResponseEntity<ReservationResponse> updateStatus(@PathVariable Long id,
+                                                            @Valid @RequestBody ReservationStatusRequest request) {
+      return ResponseEntity.ok(reservationService.updateStatus(id,request.getReservationStatus()));
+
     }
 }
