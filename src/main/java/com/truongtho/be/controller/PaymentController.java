@@ -16,8 +16,12 @@ import org.springframework.security.core.Authentication;
 import org.springframework.web.bind.annotation.*;
 
 @RestController
-@RequestMapping("/payments/v1")
+@RequestMapping("/api/v1/payments")
 @RequiredArgsConstructor
+
+
+
+
 @FieldDefaults(level = AccessLevel.PRIVATE)
 @PreAuthorize("hasAnyRole('STAFF','ADMIN')")
 public class PaymentController {

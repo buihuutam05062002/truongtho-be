@@ -25,6 +25,12 @@ public class InvoiceResponse {
 
     InvoiceStatus invoiceStatus;
     String voucherCode;
+
+    String customerId;
+    String customerName;
+    String customerEmail;
+    Integer customerPoints;   // balance right now (already minus any points used on this invoice)
+    Integer pointsRedeemed;
     LocalDateTime issuedAt;
 
     List<InvoiceDetailResponse> details;

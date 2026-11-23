@@ -8,6 +8,7 @@ import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.query.Param;
 import org.springframework.stereotype.Repository;
 
+import java.time.LocalDateTime;
 import java.util.List;
 import java.util.Optional;
 
@@ -29,8 +30,14 @@ public interface PaymentRepository extends JpaRepository<Payment,String> {
 
     List<Payment> findAllByInvoice_IdAndPaymentStatus(String invoiceId, PaymentStatus status);
 
-
     boolean existsBySepayTransactionId(Long sepayTransactionId);
 
-
+    @Query("""
+            select p.paidAt as paidAt, p.amount as amount, p.invoice.id as invoiceId
+            from Payment p
+            where p.paymentStatus = com.truongtho.be.enums.PaymentStatus.SUCCESS
+              and p.paidAt >= :from and p.paidAt < :to
+            """)
+    List<PaidRow> findPaidBetween(@Param("from") LocalDateTime from,
+                                  @Param("to") LocalDateTime to);
 }

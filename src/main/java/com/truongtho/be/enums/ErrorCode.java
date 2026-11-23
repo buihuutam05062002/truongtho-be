@@ -25,6 +25,7 @@ public enum ErrorCode {
     FORBIDDEN("2004", "Bạn không có quyền thực hiện thao tác này", HttpStatus.FORBIDDEN),
     ACCOUNT_LOCKED("2005", "Tài khoản đã bị khóa hoặc chưa được kích hoạt", HttpStatus.FORBIDDEN),
     EMAIL_ALREADY_USED("2006", "Email đã được sử dụng", HttpStatus.CONFLICT),
+    WRONG_CURRENT_PASSWORD("2007", "Mật khẩu hiện tại không đúng", HttpStatus.BAD_REQUEST),
 
     RESERVATION_NOT_FOUND("3001", "Không tìm thấy đơn đặt bàn", HttpStatus.NOT_FOUND),
     TABLE_NOT_AVAILABLE("3002", "Bàn đã có người đặt trong khung giờ này", HttpStatus.CONFLICT),

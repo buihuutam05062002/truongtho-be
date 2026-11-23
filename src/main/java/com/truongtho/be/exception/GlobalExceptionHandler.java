@@ -4,15 +4,18 @@ import com.truongtho.be.enums.ErrorCode;
 import lombok.extern.slf4j.Slf4j;
 
 import org.springframework.dao.OptimisticLockingFailureException;
+import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.http.converter.HttpMessageNotReadableException;
 import org.springframework.security.access.AccessDeniedException;
 import org.springframework.security.core.AuthenticationException;
 
+import org.springframework.validation.BindException;
 import org.springframework.web.bind.MethodArgumentNotValidException;
 import org.springframework.web.bind.annotation.ExceptionHandler;
 import org.springframework.web.bind.annotation.RestControllerAdvice;
+import org.springframework.web.method.annotation.MethodArgumentTypeMismatchException;
 import org.springframework.web.multipart.MaxUploadSizeExceededException;
 import org.springframework.web.servlet.resource.NoResourceFoundException;
 
@@ -58,6 +61,19 @@ public class GlobalExceptionHandler {
         return ErrorBody.of(ErrorCode.VALIDATION_FAILED, ErrorCode.VALIDATION_FAILED.getMessage(), details);
     }
 
+    @ExceptionHandler(BindException.class)
+    ResponseEntity<ErrorBody> bind(BindException e) {
+        Map<String, String> details = new LinkedHashMap<>();
+        e.getBindingResult().getFieldErrors()
+                .forEach(f -> details.putIfAbsent(f.getField(), "Giá trị không hợp lệ"));
+        return ErrorBody.of(ErrorCode.INVALID_REQUEST, ErrorCode.INVALID_REQUEST.getMessage(), details);
+    }
+
+    @ExceptionHandler(MethodArgumentTypeMismatchException.class)
+    ResponseEntity<ErrorBody> typeMismatch(MethodArgumentTypeMismatchException e) {
+        return ErrorBody.of(ErrorCode.INVALID_REQUEST, "Tham số '" + e.getName() + "' không hợp lệ", null);
+    }
+
     @ExceptionHandler(HttpMessageNotReadableException.class)
     ResponseEntity<ErrorBody> unreadable(HttpMessageNotReadableException e) {
         return ErrorBody.of(ErrorCode.INVALID_REQUEST, "Nội dung gửi lên không đúng định dạng JSON", null);
@@ -93,5 +109,18 @@ public class GlobalExceptionHandler {
     public ResponseEntity<Map<String, String>> handleLock(OptimisticLockingFailureException e) {
         return ResponseEntity.status(HttpStatus.CONFLICT)
                 .body(Map.of("message", "Dữ liệu vừa bị thay đổi, vui lòng thử lại"));
+    }
+    @ExceptionHandler(IllegalStateException.class)
+    ResponseEntity<ErrorBody> illegalState(IllegalStateException e) {
+        return ErrorBody.of(ErrorCode.INVALID_REQUEST, e.getMessage(), null);
+    }
+
+
+    @ExceptionHandler(TooManyRequestsException.class)
+    ResponseEntity<ErrorBody> tooMany(TooManyRequestsException e) {
+        ErrorCode c = e.getCode();
+        return ResponseEntity.status(c.getStatus())
+                .header(HttpHeaders.RETRY_AFTER, String.valueOf(e.getRetryAfterSeconds()))
+                .body(new ErrorBody(new ErrorBody.Err(c.getCode(), e.getMessage(), null)));
     }
 }

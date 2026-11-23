@@ -56,10 +56,9 @@ app:
 
   sepay:
     api-key: ${SEPAY_WEBHOOK_API_KEY}
-    account-number: ${SEPAY_ACCOUNT_NUMBER:"0000000002"}
-    bank: ${SEPAY_BANK:"MBBank"}
+    account-number: ${SEPAY_ACCOUNT_NUMBER}
+    bank: ${SEPAY_BANK}
 
 server:
-  port: ${SERVER_PORT:8081}
-
-
+  port: ${SERVER_PORT}
+  forward-headers-strategy: native

@@ -1,5 +1,6 @@
 package com.truongtho.be.controller;
 
+import com.truongtho.be.dto.request.ChangePasswordRequest;
 import com.truongtho.be.dto.request.LoginRequest;
 import com.truongtho.be.dto.request.OAuth2LoginRequest;
 import com.truongtho.be.dto.request.RefreshRequest;
@@ -13,6 +14,7 @@ import com.truongtho.be.exception.ErrorBody;
 import com.truongtho.be.service.AuthService;
 import com.truongtho.be.service.OAuth2LoginService;
 import com.truongtho.be.service.TokenService;
+import jakarta.servlet.http.HttpServletRequest;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import org.springframework.beans.factory.annotation.Value;
@@ -49,8 +51,9 @@ public class AuthController {
     }
 
     @PostMapping("/login")
-    public ResponseEntity<AuthResponse> login(@Valid @RequestBody LoginRequest request) {
-        return ok(authService.login(request));
+    public ResponseEntity<AuthResponse> login(@Valid @RequestBody LoginRequest request,
+                                              HttpServletRequest http) {
+        return ok(authService.login(request, http.getRemoteAddr()));
     }
 
     @PostMapping("/oauth2/{provider}")
@@ -91,6 +94,12 @@ public class AuthController {
                     .body(new ErrorBody(new ErrorBody.Err(e.getCode().getCode(),e.getMessage(),null)))
                     ;
         }
+    }
+
+    @PostMapping("/change-password")
+    public ResponseEntity<AuthResponse> changePassword(Authentication auth,
+                                                       @Valid @RequestBody ChangePasswordRequest request) {
+        return ok(authService.changePassword(auth.getName(), request));
     }
 
     @GetMapping("/me")

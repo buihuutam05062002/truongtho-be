@@ -22,4 +22,5 @@ public class ReservationResponse {
     String note;
     ReservationStatus reservationStatus;
     LocalDateTime createdAt;
+    String tableName;
 }
