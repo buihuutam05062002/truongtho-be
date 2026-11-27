@@ -2,7 +2,7 @@ package com.truongtho.be.enums;
 
 public enum ReservationStatus {
     PENDING ("Chờ"),
-    CONFIRM ("Chấp nhận"),
+    CONFIRMED ("Chấp nhận"),
     ARRIVED ("Đã đến"),
     COMPLETED ("Đã hoàn thành"),
     CANCELLED ("Đã hủy"),

@@ -3,6 +3,7 @@ package com.truongtho.be.controller;
 import com.truongtho.be.dto.request.DiningTableRequest;
 import com.truongtho.be.dto.response.DiningTableResponse;
 import com.truongtho.be.service.DiningTableService;
+import jakarta.validation.Valid;
 import lombok.AccessLevel;
 import lombok.experimental.FieldDefaults;
 import org.springframework.http.ResponseEntity;
@@ -30,11 +31,16 @@ public class DiningTableController {
         return ResponseEntity.ok(diningTableService.getById(idx));
     }
     @PostMapping
-    public ResponseEntity<DiningTableResponse> save(@RequestBody DiningTableRequest diningTableRequest){
+    public ResponseEntity<DiningTableResponse> save(@Valid @RequestBody DiningTableRequest diningTableRequest){
         return ResponseEntity.ok(diningTableService.save(diningTableRequest));
     }
     @DeleteMapping("/{id}")
     public ResponseEntity<DiningTableResponse> delete(@PathVariable("id") Long idx){
         return ResponseEntity.ok(diningTableService.delete(idx));
+    }
+
+    @PutMapping("/{id}")
+    public ResponseEntity<DiningTableResponse> update(@PathVariable("id") Long idx, @Valid @RequestBody DiningTableRequest diningTableRequest){
+        return ResponseEntity.ok(diningTableService.update(idx, diningTableRequest));
     }
 }

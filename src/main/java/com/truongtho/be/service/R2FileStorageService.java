@@ -8,20 +8,22 @@ import com.truongtho.be.exception.FileStorageException;
 import lombok.AccessLevel;
 import lombok.RequiredArgsConstructor;
 import lombok.experimental.FieldDefaults;
+import lombok.extern.slf4j.Slf4j;
 
 import org.springframework.stereotype.Service;
 import org.springframework.web.multipart.MultipartFile;
 import software.amazon.awssdk.core.sync.RequestBody;
 import software.amazon.awssdk.services.s3.S3Client;
-import software.amazon.awssdk.services.s3.model.CopyObjectRequest;
 import software.amazon.awssdk.services.s3.model.DeleteObjectRequest;
+import software.amazon.awssdk.services.s3.model.GetObjectRequest;
+import software.amazon.awssdk.services.s3.model.HeadObjectRequest;
 import software.amazon.awssdk.services.s3.model.NoSuchKeyException;
 import software.amazon.awssdk.services.s3.model.PutObjectRequest;
 
-import java.io.InputStream;
 import java.util.Map;
 import java.util.UUID;
 
+@Slf4j
 @Service
 @FieldDefaults(level = AccessLevel.PRIVATE, makeFinal = true)
 @RequiredArgsConstructor
@@ -42,14 +44,14 @@ public class R2FileStorageService implements FileStorageService {
         String key = TMP_PREFIX + folder.getPath() + "/"
                 + UUID.randomUUID() + EXTENSIONS.get(file.getContentType());
 
-        try (InputStream in = file.getInputStream()) {
+        try {
             s3Client.putObject(
                     PutObjectRequest.builder()
                             .bucket(props.getBucket())
                             .key(key)
                             .contentType(file.getContentType())
                             .build(),
-                    RequestBody.fromInputStream(in, file.getSize()));
+                    RequestBody.fromBytes(file.getBytes()));
         } catch (Exception e) {
             throw new FileStorageException("Upload ảnh thất bại", e);
         }
@@ -64,23 +66,42 @@ public class R2FileStorageService implements FileStorageService {
         }
         String finalKey = tmpKey.substring(TMP_PREFIX.length());
         try {
-            s3Client.copyObject(CopyObjectRequest.builder()
-                    .sourceBucket(props.getBucket())
-                    .sourceKey(tmpKey)
-                    .destinationBucket(props.getBucket())
-                    .destinationKey(finalKey)
+            var tmpObject = s3Client.getObjectAsBytes(GetObjectRequest.builder()
+                    .bucket(props.getBucket())
+                    .key(tmpKey)
                     .build());
+            s3Client.putObject(PutObjectRequest.builder()
+                            .bucket(props.getBucket())
+                            .key(finalKey)
+                            .contentType(tmpObject.response().contentType())
+                            .build(),
+                    RequestBody.fromBytes(tmpObject.asByteArray()));
+            s3Client.headObject(HeadObjectRequest.builder()
+                    .bucket(props.getBucket())
+                    .key(finalKey)
+                    .build());
+            log.info("Đã chuyển ảnh {} -> {} (bucket {})", tmpKey, finalKey, props.getBucket());
         } catch (NoSuchKeyException e) {
             throw new BadRequestException("Ảnh tạm không tồn tại hoặc đã hết hạn");
         } catch (Exception e) {
+            log.error("promote lỗi: tmpKey={}, finalKey={}, bucket={}", tmpKey, finalKey, props.getBucket(), e);
             throw new FileStorageException("Không lưu được ảnh", e);
         }
-        return props.getPublicUrl() + "/" + finalKey;
+        return publicBase() + "/" + finalKey;
+    }
+
+    @Override
+    public void deleteTemp(String tmpKey) {
+        if (tmpKey == null || !tmpKey.startsWith(TMP_PREFIX) || tmpKey.contains("..")) return;
+        s3Client.deleteObject(DeleteObjectRequest.builder()
+                .bucket(props.getBucket())
+                .key(tmpKey)
+                .build());
     }
 
     @Override
     public void delete(String url) {
-        String prefix = props.getPublicUrl() + "/";
+        String prefix = publicBase() + "/";
         if (!url.startsWith(prefix)) {
             throw new FileStorageException("URL không thuộc bucket: " + url, null);
         }
@@ -88,6 +109,11 @@ public class R2FileStorageService implements FileStorageService {
                 .bucket(props.getBucket())
                 .key(url.substring(prefix.length()))
                 .build());
+    }
+
+    private String publicBase() {
+        String base = props.getPublicUrl();
+        return base.endsWith("/") ? base.substring(0, base.length() - 1) : base;
     }
 
     private void validate(MultipartFile file, UploadFolder folder) {

@@ -14,8 +14,12 @@ import java.util.Set;
 public interface InvoiceMapper {
 
     @Mapping(source = "diningTable.name", target = "tableName")
-    @Mapping(source = "employee.users.username", target = "employeeName")
+    @Mapping(source = "employee.users.fullName", target = "employeeName")
     @Mapping(source = "voucher.code", target = "voucherCode")
+    @Mapping(source = "customer.id", target = "customerId")
+    @Mapping(source = "customer.users.fullName", target = "customerName")
+    @Mapping(source = "customer.users.email", target = "customerEmail")
+    @Mapping(source = "customer.points", target = "customerPoints")
     @Mapping(source = "invoiceDetails", target = "details")
     @Mapping(source = "invoiceDetails", target = "subTotal", qualifiedByName = "sumDetails")
     InvoiceResponse toResponse(Invoice invoice);

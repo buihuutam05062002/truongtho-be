@@ -1,6 +1,9 @@
 package com.truongtho.be.controller;
 
+import com.truongtho.be.dto.request.ApplyVoucherRequest;
+import com.truongtho.be.dto.request.AttachCustomerRequest;
 import com.truongtho.be.dto.request.InvoiceDetailRequest;
+import com.truongtho.be.dto.request.RedeemPointsRequest;
 import com.truongtho.be.dto.request.SePayWebhookRequest;
 import com.truongtho.be.dto.response.InvoiceResponse;
 import com.truongtho.be.dto.response.PaymentResponse;
@@ -10,6 +13,7 @@ import com.truongtho.be.exception.BusinessException;
 import com.truongtho.be.service.InvoiceService;
 import com.truongtho.be.service.PaymentService;
 import jakarta.validation.Valid;
+import java.util.List;
 import lombok.AccessLevel;
 import lombok.RequiredArgsConstructor;
 import lombok.experimental.FieldDefaults;
@@ -24,10 +28,10 @@ import org.springframework.security.core.Authentication;
 import org.springframework.web.bind.annotation.*;
 
 @RestController
-@RequestMapping("/invoices/v1")
+@RequestMapping("/api/v1/invoices")
 @RequiredArgsConstructor
 @FieldDefaults(level = AccessLevel.PRIVATE)
-//@PreAuthorize("hasAnyRole('STAFF','ADMIN')")
+@PreAuthorize("hasAnyRole('STAFF','ADMIN')")
 public class InvoiceController {
     final InvoiceService invoiceService;
     final PaymentService paymentService;
@@ -36,6 +40,11 @@ public class InvoiceController {
     public ResponseEntity<InvoiceResponse> create(@RequestParam Long tableId, Authentication auth) {
         InvoiceResponse response = invoiceService.createInvoice(tableId, currentUserId(auth));
         return ResponseEntity.status(HttpStatus.CREATED).body(response);
+    }
+
+    @GetMapping("/mine")
+    public ResponseEntity<List<InvoiceResponse>> myOpenInvoices(Authentication auth) {
+        return ResponseEntity.ok(invoiceService.findMyOpenInvoices(currentUserId(auth)));
     }
 
     @GetMapping("/{id}")
@@ -62,6 +71,34 @@ public class InvoiceController {
         return ResponseEntity.ok(invoiceService.removeDetail(id, productId));
     }
 
+    @PutMapping("/{id}/customer")
+    public ResponseEntity<InvoiceResponse> attachCustomer(@PathVariable String id,
+                                                          @Valid @RequestBody AttachCustomerRequest request) {
+        return ResponseEntity.ok(invoiceService.attachCustomer(id, request.getKeyword()));
+    }
+
+    @DeleteMapping("/{id}/customer")
+    public ResponseEntity<InvoiceResponse> detachCustomer(@PathVariable String id) {
+        return ResponseEntity.ok(invoiceService.detachCustomer(id));
+    }
+
+    @PutMapping("/{id}/voucher")
+    public ResponseEntity<InvoiceResponse> applyVoucher(@PathVariable String id,
+                                                        @Valid @RequestBody ApplyVoucherRequest request) {
+        return ResponseEntity.ok(invoiceService.applyVoucher(id, request.getCode()));
+    }
+
+    @DeleteMapping("/{id}/voucher")
+    public ResponseEntity<InvoiceResponse> removeVoucher(@PathVariable String id) {
+        return ResponseEntity.ok(invoiceService.removeVoucher(id));
+    }
+
+    @PutMapping("/{id}/points")
+    public ResponseEntity<InvoiceResponse> redeemPoints(@PathVariable String id,
+                                                        @Valid @RequestBody RedeemPointsRequest request) {
+        return ResponseEntity.ok(invoiceService.redeemPoints(id, request.getPoints()));
+    }
+
     @PostMapping("/{id}/cancel")
     public ResponseEntity<Void> cancel(@PathVariable String id) {
         invoiceService.cancelInvoice(id);
@@ -82,6 +119,18 @@ public class InvoiceController {
     @PostMapping("/{id}/payments/sepay")
     public ResponseEntity<PaymentResponse> createOnlinePayment(@PathVariable("id") String id){
         return ResponseEntity.ok(paymentService.createSePayPayment(id));
+    }
+
+    @PostMapping("/{id}/move-table")
+    public ResponseEntity<InvoiceResponse> moveTable(@PathVariable String id,
+                                                     @RequestParam Long toTableId) {
+        return ResponseEntity.ok(invoiceService.moveTable(id, toTableId));
+    }
+
+    @PostMapping("/{id}/merge-table")
+    public ResponseEntity<InvoiceResponse> mergeTable(@PathVariable String id,
+                                                      @RequestParam Long fromTableId) {
+        return ResponseEntity.ok(invoiceService.mergeTable(id, fromTableId));
     }
 
 

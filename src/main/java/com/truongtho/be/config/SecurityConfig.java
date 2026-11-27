@@ -2,10 +2,12 @@ package com.truongtho.be.config;
 
 import com.truongtho.be.enums.ErrorCode;
 import com.truongtho.be.exception.ErrorBody;
+import jakarta.servlet.DispatcherType;
 import jakarta.servlet.http.HttpServletResponse;
 import lombok.AccessLevel;
 import lombok.RequiredArgsConstructor;
 import lombok.experimental.FieldDefaults;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.boot.web.servlet.FilterRegistrationBean;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
@@ -61,17 +63,27 @@ public class SecurityConfig {
                         .accessDeniedHandler((req, res, ex) -> write(res, ErrorCode.FORBIDDEN)))
 
                 .authorizeHttpRequests(a -> a
-                        .requestMatchers(API + "/auth/me").authenticated()
+                        .dispatcherTypeMatchers(DispatcherType.ASYNC).permitAll()
+                        .requestMatchers(HttpMethod.GET,API + "/admin/ai/**").hasAnyRole("ADMIN")
+                        .requestMatchers(HttpMethod.POST, API + "/chat/**").permitAll()
+                        .requestMatchers(API + "/auth/me", API + "/auth/change-password").authenticated()
                         .requestMatchers(API + "/auth/**").permitAll()
+                        .requestMatchers(HttpMethod.POST, "/api/webhooks/sepay").permitAll()
                         .requestMatchers(HttpMethod.GET, API + "/products/**", API + "/categories/**").permitAll()
-                        .requestMatchers(HttpMethod.POST, API + "/reservations").permitAll()
-                        .requestMatchers(HttpMethod.PATCH,API +  "/reservations/**").hasAnyRole("ADMIN")
+                        .requestMatchers(HttpMethod.POST, API + "/reservations").authenticated()
+                        .requestMatchers(HttpMethod.GET, API + "/reservations/me").authenticated()
+                        .requestMatchers(HttpMethod.PUT, API + "/reservations/me/*").authenticated()
+                        .requestMatchers(HttpMethod.PATCH, API + "/reservations/me/*/cancel").authenticated()
+                        .requestMatchers(HttpMethod.PATCH, API + "/reservations/**").hasAnyRole("ADMIN", "STAFF")
                         .requestMatchers(API + "/admin/**").hasRole("ADMIN")
+
                         .requestMatchers(API + "/products/**", API + "/categories/**",
                                 API + "/dining-tables/**", API + "/reservations/**",
+                                API + "/invoices/**", API + "/payments/**",
                                 API + "/uploads/**").hasAnyRole("ADMIN", "STAFF")
                         .anyRequest().authenticated())
-                .addFilterBefore(jwtFilter, UsernamePasswordAuthenticationFilter.class);
+                .addFilterBefore(jwtFilter, UsernamePasswordAuthenticationFilter.class)
+                .addFilterBefore(new RateLimitFilter(objectMapper), JwtAuthenticationFilter.class);
         return http.build();
     }
 
@@ -99,13 +111,13 @@ public class SecurityConfig {
 
 
     @Bean
-    public CorsConfigurationSource corsConfigurationSource() {
+    public CorsConfigurationSource corsConfigurationSource(@Value("${app.cors.allowed-origins}") List<String> allowedOrigins) {
         CorsConfiguration config = new CorsConfiguration();
-        config.setAllowedOrigins(List.of("http://localhost:5173"));
+        config.setAllowedOrigins(allowedOrigins);
         config.setAllowedMethods(List.of("GET", "POST", "PUT", "PATCH", "DELETE", "OPTIONS"));
         config.setAllowedHeaders(List.of("Authorization", "Content-Type"));
         config.setAllowCredentials(true);
-
+        config.setExposedHeaders(List.of("Retry-After"));
         UrlBasedCorsConfigurationSource source = new UrlBasedCorsConfigurationSource();
         source.registerCorsConfiguration("/api/**", config);
         return source;

@@ -3,8 +3,10 @@ package com.truongtho.be.service;
 import com.truongtho.be.dto.request.CategoryRequest;
 import com.truongtho.be.dto.response.CategoryResponse;
 import com.truongtho.be.entity.Category;
+import com.truongtho.be.exception.AppException;
 import com.truongtho.be.exception.ResourceNotFoundException;
 import com.truongtho.be.repository.CategoryRepository;
+import com.truongtho.be.repository.ProductRepository;
 import lombok.AccessLevel;
 import lombok.RequiredArgsConstructor;
 import lombok.experimental.FieldDefaults;
@@ -19,6 +21,7 @@ import java.util.List;
 @RequiredArgsConstructor
 public class CategoryService {
     final CategoryRepository categoryRepository;
+    final ProductRepository productRepository;
 
 
     protected Category findById(Long id) {
@@ -54,6 +57,10 @@ public class CategoryService {
                 .build();
     }
     public CategoryResponse delete(Long id){
+        boolean isProduct = productRepository.existsByCategoryId(id);
+        if(isProduct){
+            throw new AppException("Loại món đang có món ăn, không thể xóa");
+        }
         Category category    = findById(id);
         categoryRepository.deleteById(id);
         return new CategoryResponse(category.getId(),category.getName());

@@ -2,6 +2,8 @@ package com.truongtho.be.controller;
 
 import com.truongtho.be.dto.request.ProductRequest;
 import com.truongtho.be.dto.response.ProductResponse;
+import com.truongtho.be.dto.response.ProductStatsResponse;
+import com.truongtho.be.enums.ProductStatus;
 import com.truongtho.be.service.ProductService;
 import lombok.AccessLevel;
 import lombok.RequiredArgsConstructor;
@@ -28,8 +30,16 @@ public class ProductController {
     }
 
     @GetMapping
-    public Page<ProductResponse> getAll(Pageable pageable) {
-        return productService.getAll(pageable);
+    public Page<ProductResponse> getAll(@RequestParam(required = false) String keyword,
+                                        @RequestParam(required = false) Long categoryId,
+                                        @RequestParam(required = false) ProductStatus status,
+                                        Pageable pageable) {
+        return productService.getAll(keyword, categoryId, status, pageable);
+    }
+
+    @GetMapping("/stats")
+    public ProductStatsResponse stats() {
+        return productService.getStats();
     }
 
     @PostMapping

@@ -53,6 +53,9 @@ public class Invoice {
     @JoinColumn(name = "customer_id")
     Customer customer;
 
+    @Column(columnDefinition = "int default 0")
+    Integer pointsRedeemed = 0;
+
     @OneToMany(mappedBy = "invoice", cascade = CascadeType.ALL,orphanRemoval = true)
     Set<InvoiceDetail> invoiceDetails  = new HashSet<>();;
 }

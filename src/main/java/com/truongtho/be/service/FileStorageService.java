@@ -7,4 +7,5 @@ public interface FileStorageService {
     String uploadTemp(MultipartFile file, UploadFolder folder);
     String promote(String tmpKey, UploadFolder folder);
     void delete(String url);
+    void deleteTemp(String tmpKey);
 }

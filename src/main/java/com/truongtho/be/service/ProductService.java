@@ -3,9 +3,11 @@ package com.truongtho.be.service;
 import com.truongtho.be.dto.request.ProductImageRequest;
 import com.truongtho.be.dto.request.ProductRequest;
 import com.truongtho.be.dto.response.ProductResponse;
+import com.truongtho.be.dto.response.ProductStatsResponse;
 import com.truongtho.be.entity.Category;
 import com.truongtho.be.entity.Product;
 import com.truongtho.be.entity.ProductImage;
+import com.truongtho.be.enums.ProductStatus;
 import com.truongtho.be.enums.UploadFolder;
 import com.truongtho.be.exception.ResourceNotFoundException;
 import com.truongtho.be.mapper.ProductMapper;
@@ -26,6 +28,7 @@ import org.springframework.transaction.support.TransactionSynchronizationManager
 
 
 import java.util.ArrayList;
+import java.util.EnumMap;
 import java.util.List;
 import java.util.Map;
 import java.util.function.Function;
@@ -40,7 +43,7 @@ public class ProductService {
     final ProductMapper productMapper;
     final FileStorageService fileStorageService;
     final CategoryService categoryService;
-
+    final MenuIndexService menuIndexService;
     private Product findById(Long id) {
         return productRepository.findById(id)
                 .orElseThrow(() -> new ResourceNotFoundException("Không tìm thấy món ăn theo id " + id));
@@ -52,8 +55,30 @@ public class ProductService {
     }
 
     @Transactional(readOnly = true)
-    public Page<ProductResponse> getAll(Pageable pageable) {
-        return productRepository.findAll(pageable).map(productMapper::toResponse);
+    public Page<ProductResponse> getAll(String keyword, Long categoryId, ProductStatus status, Pageable pageable) {
+        String pattern = (keyword == null || keyword.isBlank())
+                ? null
+                : "%" + keyword.trim().toLowerCase() + "%";
+        return productRepository.search(pattern, categoryId, status, pageable)
+                .map(productMapper::toResponse);
+    }
+
+    @Transactional(readOnly = true)
+    public ProductStatsResponse getStats() {
+        Map<ProductStatus, Long> byStatus = new EnumMap<>(ProductStatus.class);
+        for (Object[] row : productRepository.countByStatus()) {
+            if (row[0] != null) byStatus.put((ProductStatus) row[0], (Long) row[1]);
+        }
+        long orderable = byStatus.getOrDefault(ProductStatus.ON_SALE, 0L)
+                + byStatus.getOrDefault(ProductStatus.AVAILABLE, 0L);
+        long paused = byStatus.getOrDefault(ProductStatus.SUSPENDED, 0L)
+                + byStatus.getOrDefault(ProductStatus.OUT_OF_STOCK, 0L);
+
+        List<ProductStatsResponse.CategoryCount> categories = productRepository.countByCategory().stream()
+                .map(row -> new ProductStatsResponse.CategoryCount((Long) row[0], (Long) row[1]))
+                .toList();
+
+        return new ProductStatsResponse(productRepository.count(), orderable, paused, categories);
     }
 
     @Transactional
@@ -61,7 +86,9 @@ public class ProductService {
         Product product = productMapper.toEntity(request);
         product.setCategory(categoryService.findById(request.getCategoryId()));
         syncImages(product, request.getProductImageRequests());
-        return productMapper.toResponse(productRepository.save(product));
+        Product saved = productRepository.save(product);
+        indexAfterCommit(saved.getId());
+        return productMapper.toResponse(saved);
     }
 
     @Transactional
@@ -70,7 +97,9 @@ public class ProductService {
         productMapper.updateEntity(request, product);
         product.setCategory(categoryService.findById(request.getCategoryId()));
         syncImages(product, request.getProductImageRequests());
-        return productMapper.toResponse(productRepository.save(product));
+        Product saved = productRepository.save(product);
+        indexAfterCommit(saved.getId());
+        return productMapper.toResponse(saved);
     }
 
     @Transactional
@@ -91,6 +120,7 @@ public class ProductService {
                 .collect(Collectors.toMap(ProductImage::getId, Function.identity()));
 
         List<String> promoted = new ArrayList<>();
+        List<String> tmpKeys = new ArrayList<>();
         deleteFilesOnRollback(promoted);
 
         List<ProductImage> result = new ArrayList<>();
@@ -106,6 +136,7 @@ public class ProductService {
             } else {
                 String url = fileStorageService.promote(req.getKey(), UploadFolder.PRODUCT);
                 promoted.add(url);
+                tmpKeys.add(req.getKey());
                 image = new ProductImage();
                 image.setImageUrl(url);
             }
@@ -122,6 +153,7 @@ public class ProductService {
         result.forEach(product::addImage);
 
         deleteFilesAfterCommit(removedUrls);
+        deleteTempAfterCommit(tmpKeys);
     }
 
     private void deleteFilesAfterCommit(List<String> urls) {
@@ -133,7 +165,21 @@ public class ProductService {
             }
         });
     }
-
+    private void deleteTempAfterCommit(List<String> tmpKeys) {
+        if (tmpKeys.isEmpty()) return;
+        TransactionSynchronizationManager.registerSynchronization(new TransactionSynchronization() {
+            @Override
+            public void afterCommit() {
+                tmpKeys.forEach(k -> {
+                    try {
+                        fileStorageService.deleteTemp(k);
+                    } catch (Exception e) {
+                        log.warn("Không xóa được ảnh tạm trên R2: {}", k, e);
+                    }
+                });
+            }
+        });
+    }
     private void deleteFilesOnRollback(List<String> urls) {
         TransactionSynchronizationManager.registerSynchronization(new TransactionSynchronization() {
             @Override
@@ -151,5 +197,25 @@ public class ProductService {
         } catch (Exception e) {
             log.warn("Không xóa được file trên R2: {}", url, e);
         }
+    }
+
+    private void indexAfterCommit(Long id) {
+        TransactionSynchronizationManager.registerSynchronization(new TransactionSynchronization() {
+            @Override
+            public void afterCommit() {
+                try { menuIndexService.indexById(id); }
+                catch (Exception e) { log.warn("Không index được món {}", id, e); }
+            }
+        });
+    }
+
+    private void removeIndexAfterCommit(Long id) {
+        TransactionSynchronizationManager.registerSynchronization(new TransactionSynchronization() {
+            @Override
+            public void afterCommit() {
+                try { menuIndexService.remove(id); }
+                catch (Exception e) { log.warn("Không xóa vector món {}", id, e); }
+            }
+        });
     }
 }

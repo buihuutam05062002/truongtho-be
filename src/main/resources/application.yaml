@@ -3,16 +3,21 @@ spring:
     name: be
   datasource:
     url: ${DB_URL}
-    driver-class-name: com.mysql.cj.jdbc.Driver
     username: ${DB_USERNAME}
     password: ${DB_PASSWORD}
+
   jpa:
     hibernate:
-      ddl-auto: update
+      ddl-auto: validate
     properties:
       hibernate:
         default_batch_fetch_size: 20
-    show-sql: true
+    show-sql: false
+  flyway:
+    enabled: true
+    locations: classpath:db/migration
+    baseline-on-migrate: true
+    baseline-version: 0
   h2:
     console:
       enabled: false
@@ -22,7 +27,25 @@ spring:
       max-file-size: 5MB
       max-request-size: 5MB
 
-
+  ai:
+    google:
+      genai:
+        api-key: ${GEMINI_API_KEY}
+        chat:
+            model: ${GEMINI_CHAT_MODEL}
+            tempature: ${GEMINI_CHAT_TEMPERATURE}
+        embedding:
+          text:
+            options:
+              model: ${GEMINI_EMBEDDING_MODEL}
+              dimensions: 1536
+          api-key: ${GEMINI_API_KEY}
+    vectorstore:
+      pgvector:
+        dimensions: 1536
+        initialize-schema: true
+        index-type: hnsw
+        distance-type: cosine_distance
 cloudflare:
   r2:
     account-id: ${R2_ACCOUNT_ID}
@@ -34,6 +57,9 @@ cloudflare:
 
 
 app:
+  cors:
+    allowed-origins: ${CORS_ALLOWED_ORIGINS}
+
   upload:
     max-size: 5MB
     allowed-types:
@@ -49,17 +75,29 @@ app:
   google:
     client-id: ${GOOGLE_CLIENT_ID}
     client-secret: ${GOOGLE_CLIENT_SECRET}
-    redirect-uri: ${GOOGLE_REDIRECT_URI}
+    redirect-url: ${GOOGLE_REDIRECT_URI}
   cookie:
     secure: ${COOKIE_SECURE:false}
     path: ${COOKIE_PATH:/api/v1/auth}
 
   sepay:
     api-key: ${SEPAY_WEBHOOK_API_KEY}
-    account-number: ${SEPAY_ACCOUNT_NUMBER:"0000000002"}
-    bank: ${SEPAY_BANK:"MBBank"}
+    account-number: ${SEPAY_ACCOUNT_NUMBER}
+    bank: ${SEPAY_BANK}
 
+  restaurant:
+    name: Trường Thọ
+    address: "Địa chỉ thật của nhà hàng"
+    opening-hours: "08:00–22:00"
+    phone: "0918 123 456"
+    intro: "Nhà hàng món Việt, không gian gia đình, có đặt bàn trước."
 server:
-  port: ${SERVER_PORT:8081}
+  port: ${SERVER_PORT}
+  forward-headers-strategy: native
 
 
+
+
+logging:
+  level:
+    org.flywaydb: DEBUG

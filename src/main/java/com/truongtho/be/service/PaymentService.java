@@ -4,9 +4,11 @@ import com.truongtho.be.dto.request.PaymentRequest;
 import com.truongtho.be.dto.response.PaymentResponse;
 import com.truongtho.be.entity.DiningTable;
 import com.truongtho.be.entity.Employee;
+import com.truongtho.be.entity.Reservation;
 import com.truongtho.be.entity.Invoice;
 import com.truongtho.be.entity.Payment;
 import com.truongtho.be.enums.*;
+import com.truongtho.be.event.PaymentCompletedEvent;
 import com.truongtho.be.exception.BusinessException;
 import com.truongtho.be.exception.ResourceNotFoundException;
 import com.truongtho.be.mapper.PaymentMapper;
@@ -17,6 +19,7 @@ import lombok.AccessLevel;
 import lombok.RequiredArgsConstructor;
 import lombok.experimental.FieldDefaults;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.context.ApplicationEventPublisher;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import com.truongtho.be.dto.request.SePayWebhookRequest;
@@ -35,6 +38,9 @@ public class PaymentService {
     EmployeeRepository employeeRepository;
     PaymentMapper paymentMapper;
     SepayService sepayService;
+    LoyaltyService loyaltyService;
+    VoucherService voucherService;
+    ApplicationEventPublisher eventPublisher;
 
     @Transactional
     public PaymentResponse createPayment(String invoiceId, PaymentRequest request) {
@@ -107,20 +113,25 @@ public class PaymentService {
         payment.setPaidAt(LocalDateTime.now());
 
         invoice.setInvoiceStatus(InvoiceStatus.PAID);
-
+        loyaltyService.awardPoints(invoice);
+        voucherService.consume(invoice.getVoucher());
+        completeReservation(invoice);
         DiningTable table = invoice.getDiningTable();
         if (table != null && table.getTableStatus() == TableStatus.SERVING) {
             table.setTableStatus(TableStatus.AVAILABLE);
         }
+        eventPublisher.publishEvent(new PaymentCompletedEvent(invoice.getId()));
 
         return paymentMapper.toResponse(payment);
     }
 
 
-
-
-
-
+    private void completeReservation(Invoice invoice) {
+        Reservation r = invoice.getReservation();
+        if (r != null && r.getReservationStatus() == ReservationStatus.ARRIVED) {
+            r.setReservationStatus(ReservationStatus.COMPLETED);
+        }
+    }
 
     private String generatorTransactionCode(){
         return  "TT" +  UUID.randomUUID()
@@ -129,7 +140,6 @@ public class PaymentService {
                 .substring(1,20)
                 .toUpperCase();
     }
-
 
     @Transactional
     public PaymentResponse createSePayPayment(String invoiceId){
@@ -168,8 +178,6 @@ public class PaymentService {
                 .QrUrl(url)
                 .build();
     }
-
-
 
     @Transactional
     public void handleSePayWebhook(SePayWebhookRequest req){
@@ -217,11 +225,14 @@ public class PaymentService {
         payment.setSepayTransactionId(req.getId());
 
         invoice.setInvoiceStatus(InvoiceStatus.PAID);
-
+        loyaltyService.awardPoints(invoice);
+        voucherService.consume(invoice.getVoucher());
+        completeReservation(invoice);
         DiningTable table = invoice.getDiningTable();
         if (table != null && table.getTableStatus() == TableStatus.SERVING) {
             table.setTableStatus(TableStatus.AVAILABLE);
         }
+        eventPublisher.publishEvent(new PaymentCompletedEvent(invoice.getId()));
     }
 
 

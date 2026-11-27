@@ -11,6 +11,10 @@ import lombok.experimental.FieldDefaults;
 @AllArgsConstructor
 @FieldDefaults(level = AccessLevel.PRIVATE)
 public class ReservationStatusRequest {
+
+    Long tableId;
+
+
     @NotNull(message = "Vui lòng chọn trạng thái")
     ReservationStatus reservationStatus;
 }
