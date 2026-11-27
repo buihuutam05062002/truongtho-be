@@ -8,6 +8,7 @@ import com.truongtho.be.entity.Reservation;
 import com.truongtho.be.entity.Invoice;
 import com.truongtho.be.entity.Payment;
 import com.truongtho.be.enums.*;
+import com.truongtho.be.event.PaymentCompletedEvent;
 import com.truongtho.be.exception.BusinessException;
 import com.truongtho.be.exception.ResourceNotFoundException;
 import com.truongtho.be.mapper.PaymentMapper;
@@ -18,6 +19,7 @@ import lombok.AccessLevel;
 import lombok.RequiredArgsConstructor;
 import lombok.experimental.FieldDefaults;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.context.ApplicationEventPublisher;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import com.truongtho.be.dto.request.SePayWebhookRequest;
@@ -38,6 +40,7 @@ public class PaymentService {
     SepayService sepayService;
     LoyaltyService loyaltyService;
     VoucherService voucherService;
+    ApplicationEventPublisher eventPublisher;
 
     @Transactional
     public PaymentResponse createPayment(String invoiceId, PaymentRequest request) {
@@ -117,6 +120,7 @@ public class PaymentService {
         if (table != null && table.getTableStatus() == TableStatus.SERVING) {
             table.setTableStatus(TableStatus.AVAILABLE);
         }
+        eventPublisher.publishEvent(new PaymentCompletedEvent(invoice.getId()));
 
         return paymentMapper.toResponse(payment);
     }
@@ -228,6 +232,7 @@ public class PaymentService {
         if (table != null && table.getTableStatus() == TableStatus.SERVING) {
             table.setTableStatus(TableStatus.AVAILABLE);
         }
+        eventPublisher.publishEvent(new PaymentCompletedEvent(invoice.getId()));
     }
 
 

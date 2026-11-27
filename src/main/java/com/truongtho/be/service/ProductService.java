@@ -43,7 +43,7 @@ public class ProductService {
     final ProductMapper productMapper;
     final FileStorageService fileStorageService;
     final CategoryService categoryService;
-
+    final MenuIndexService menuIndexService;
     private Product findById(Long id) {
         return productRepository.findById(id)
                 .orElseThrow(() -> new ResourceNotFoundException("Không tìm thấy món ăn theo id " + id));
@@ -86,7 +86,9 @@ public class ProductService {
         Product product = productMapper.toEntity(request);
         product.setCategory(categoryService.findById(request.getCategoryId()));
         syncImages(product, request.getProductImageRequests());
-        return productMapper.toResponse(productRepository.save(product));
+        Product saved = productRepository.save(product);
+        indexAfterCommit(saved.getId());
+        return productMapper.toResponse(saved);
     }
 
     @Transactional
@@ -95,7 +97,9 @@ public class ProductService {
         productMapper.updateEntity(request, product);
         product.setCategory(categoryService.findById(request.getCategoryId()));
         syncImages(product, request.getProductImageRequests());
-        return productMapper.toResponse(productRepository.save(product));
+        Product saved = productRepository.save(product);
+        indexAfterCommit(saved.getId());
+        return productMapper.toResponse(saved);
     }
 
     @Transactional
@@ -193,5 +197,25 @@ public class ProductService {
         } catch (Exception e) {
             log.warn("Không xóa được file trên R2: {}", url, e);
         }
+    }
+
+    private void indexAfterCommit(Long id) {
+        TransactionSynchronizationManager.registerSynchronization(new TransactionSynchronization() {
+            @Override
+            public void afterCommit() {
+                try { menuIndexService.indexById(id); }
+                catch (Exception e) { log.warn("Không index được món {}", id, e); }
+            }
+        });
+    }
+
+    private void removeIndexAfterCommit(Long id) {
+        TransactionSynchronizationManager.registerSynchronization(new TransactionSynchronization() {
+            @Override
+            public void afterCommit() {
+                try { menuIndexService.remove(id); }
+                catch (Exception e) { log.warn("Không xóa vector món {}", id, e); }
+            }
+        });
     }
 }

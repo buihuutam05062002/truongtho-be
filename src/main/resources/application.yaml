@@ -3,9 +3,9 @@ spring:
     name: be
   datasource:
     url: ${DB_URL}
-    driver-class-name: com.mysql.cj.jdbc.Driver
     username: ${DB_USERNAME}
     password: ${DB_PASSWORD}
+
   jpa:
     hibernate:
       ddl-auto: update
@@ -22,7 +22,25 @@ spring:
       max-file-size: 5MB
       max-request-size: 5MB
 
-
+  ai:
+    google:
+      genai:
+        api-key: ${GEMINI_API_KEY}
+        chat:
+            model: ${GEMINI_CHAT_MODEL}
+            tempature: ${GEMINI_CHAT_TEMPERATURE}
+        embedding:
+          text:
+            options:
+              model: ${GEMINI_EMBEDDING_MODEL}
+              dimensions: 1536
+          api-key: ${GEMINI_API_KEY}
+    vectorstore:
+      pgvector:
+        dimensions: 1536
+        initialize-schema: true
+        index-type: hnsw
+        distance-type: cosine_distance
 cloudflare:
   r2:
     account-id: ${R2_ACCOUNT_ID}
@@ -49,7 +67,7 @@ app:
   google:
     client-id: ${GOOGLE_CLIENT_ID}
     client-secret: ${GOOGLE_CLIENT_SECRET}
-    redirect-uri: ${GOOGLE_REDIRECT_URI}
+    redirect-url: ${GOOGLE_REDIRECT_URI}
   cookie:
     secure: ${COOKIE_SECURE:false}
     path: ${COOKIE_PATH:/api/v1/auth}
@@ -59,6 +77,16 @@ app:
     account-number: ${SEPAY_ACCOUNT_NUMBER}
     bank: ${SEPAY_BANK}
 
+  restaurant:
+    name: Trường Thọ
+    address: "Địa chỉ thật của nhà hàng"
+    opening-hours: "08:00–22:00"
+    phone: "0918 123 456"
+    intro: "Nhà hàng món Việt, không gian gia đình, có đặt bàn trước."
 server:
   port: ${SERVER_PORT}
   forward-headers-strategy: native
+
+
+
+

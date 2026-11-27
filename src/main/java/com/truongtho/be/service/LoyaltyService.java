@@ -36,7 +36,7 @@ public class LoyaltyService {
     }
 
     public void awardPoints(Invoice invoice) {
-        if (invoice.getCustomer() == null) return;          // walk-in guest: nothing to credit
+        if (invoice.getCustomer() == null) return;
         BigDecimal paid = nz(invoice.getTotalAmount());
         int earned = paid.divide(BigDecimal.valueOf(VND_PER_POINT_EARNED), 0, RoundingMode.DOWN).intValue();
 

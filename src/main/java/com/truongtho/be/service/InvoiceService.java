@@ -274,7 +274,6 @@ public class InvoiceService {
         invoice.setDiscountAmount(discount);
         invoice.setTotalAmount(total);
 
-        // An unpaid QR/payment was created for the OLD amount -> void it so it can't settle the wrong sum.
         if (invoice.getId() != null && (before == null || before.compareTo(total) != 0)) {
             paymentRepository.findAllByInvoice_IdAndPaymentStatus(invoice.getId(), PaymentStatus.PENDING)
                     .forEach(p -> p.setPaymentStatus(PaymentStatus.CANCELLED));

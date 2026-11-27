@@ -2,6 +2,7 @@ package com.truongtho.be.config;
 
 import com.truongtho.be.enums.ErrorCode;
 import com.truongtho.be.exception.ErrorBody;
+import jakarta.servlet.DispatcherType;
 import jakarta.servlet.http.HttpServletResponse;
 import lombok.AccessLevel;
 import lombok.RequiredArgsConstructor;
@@ -61,6 +62,9 @@ public class SecurityConfig {
                         .accessDeniedHandler((req, res, ex) -> write(res, ErrorCode.FORBIDDEN)))
 
                 .authorizeHttpRequests(a -> a
+                        .dispatcherTypeMatchers(DispatcherType.ASYNC).permitAll()
+                        .requestMatchers(HttpMethod.GET,API + "/admin/ai/**").hasAnyRole("ADMIN")
+                        .requestMatchers(HttpMethod.POST, API + "/chat/**").permitAll()
                         .requestMatchers(API + "/auth/me", API + "/auth/change-password").authenticated()
                         .requestMatchers(API + "/auth/**").permitAll()
                         .requestMatchers(HttpMethod.POST, "/api/webhooks/sepay").permitAll()
@@ -71,6 +75,7 @@ public class SecurityConfig {
                         .requestMatchers(HttpMethod.PATCH, API + "/reservations/me/*/cancel").authenticated()
                         .requestMatchers(HttpMethod.PATCH, API + "/reservations/**").hasAnyRole("ADMIN", "STAFF")
                         .requestMatchers(API + "/admin/**").hasRole("ADMIN")
+
                         .requestMatchers(API + "/products/**", API + "/categories/**",
                                 API + "/dining-tables/**", API + "/reservations/**",
                                 API + "/invoices/**", API + "/payments/**",
