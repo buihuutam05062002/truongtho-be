@@ -1,0 +1,20 @@
+CREATE UNIQUE INDEX IF NOT EXISTS uk_roles_name         ON roles (name);
+CREATE UNIQUE INDEX IF NOT EXISTS uk_users_email        ON users (email);
+CREATE UNIQUE INDEX IF NOT EXISTS uk_users_username     ON users (username);
+CREATE UNIQUE INDEX IF NOT EXISTS uk_voucher_code_lower ON voucher (lower(code));
+
+CREATE INDEX IF NOT EXISTS idx_user_roles_role         ON user_roles (role_id);
+CREATE INDEX IF NOT EXISTS idx_refresh_tokens_user     ON refresh_tokens (user_id);
+CREATE INDEX IF NOT EXISTS idx_refresh_tokens_expires  ON refresh_tokens (expires_at);
+CREATE INDEX IF NOT EXISTS idx_products_category       ON products (category_id);
+CREATE INDEX IF NOT EXISTS idx_product_images_product  ON product_images (product_id);
+CREATE INDEX IF NOT EXISTS idx_reservations_customer   ON reservations (customer_id);
+CREATE INDEX IF NOT EXISTS idx_reservations_time       ON reservations (reservation_time);
+CREATE INDEX IF NOT EXISTS idx_reservations_table      ON reservations (table_id);
+CREATE INDEX IF NOT EXISTS idx_invoices_customer       ON invoices (customer_id);
+CREATE INDEX IF NOT EXISTS idx_invoices_table          ON invoices (table_id);
+CREATE INDEX IF NOT EXISTS idx_invoices_issued_at      ON invoices (issued_at);
+CREATE INDEX IF NOT EXISTS idx_invoices_status         ON invoices (invoice_status);
+CREATE INDEX IF NOT EXISTS idx_invoice_details_product ON invoice_details (product_id);
+CREATE INDEX IF NOT EXISTS idx_payments_invoice        ON payments (invoice_id);
+CREATE INDEX IF NOT EXISTS idx_payments_paid_at        ON payments (paid_at);

@@ -120,7 +120,7 @@ public class UserAdminService {
         employeeRepository.save(emp);
     }
 
-    .    private void deactivateEmployee(Users user) {
+      private void deactivateEmployee(Users user) {
         employeeRepository.findById(user.getId())
                 .ifPresent(e -> e.setEmployeeStatus(EmployeeStatus.RESIGNED));
     }
